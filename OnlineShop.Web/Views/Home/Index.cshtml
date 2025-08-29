@@ -1,0 +1,30 @@
+﻿@using OnlineShop.Domain.Models
+@model IEnumerable<Product>
+
+<h2>Products</h2>
+
+@if(!Model.Any())
+{
+    <div class="alert alert-info">No products available. Please add some products, or Contact with Admin</div>
+}
+
+    <div class="container-fluid">
+    <div class="row" id="productsData">
+    
+@foreach (var product in Model)
+{
+    <div class="card border-warning mb-3" style="max-width: 20rem;">
+                <div class="card-header">Price: @product.Price ||Discount: @product.DiscountPercent</div>
+        <div class="card-body">
+            <h4 class="card-title">@product.Name</h4>
+            <p class="card-text">@product.Description</p>
+
+                    <a class="btn btn-success addToCartBtn" asp-controller="Cart" asp-action="AddToCart" asp-route-id="@product.Id">Add to Cart</a>
+        </div>
+    </div>
+}
+    </div>
+</div>
+
+<a class="btn btn-secondary" asp-controller="Cart" asp-action="Index">Go to Cart</a>
+

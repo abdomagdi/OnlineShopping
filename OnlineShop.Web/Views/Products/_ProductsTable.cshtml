@@ -1,0 +1,80 @@
+﻿<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Price</th>
+            @* <th>Discount</th> *@
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="productsBody">
+        @foreach (var item in Model)
+        {
+            <tr data-id="@item.Id">
+                <td>@item.Name</td>
+                <td>@item.Description</td>
+                <td>@item.Price</td>
+                @* <td>@item.</td> *@
+                <td>
+                    <button class="btn btn-sm btn-warning editBtn" data-id="@item.Id">Edit</button>
+                    <button class="btn btn-sm btn-danger deleteBtn" data-id="@item.Id">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts{
+    <script>
+        // Submit Add/Edit
+        $("#productForm").submit(function (e) {
+            debugger;
+            e.preventDefault();
+            $.ajax({
+                url: '@Url.Action("Save", "Products")',
+                type: "POST",
+                data: $(this).serialize(),
+                success: function (html) {
+                    $("#productsBody").html($(html).find("#productsBody").html());
+
+                    // Reset للفورم
+                    $("#productForm")[0].reset();
+                    $("#productId").val("");
+                    $("#saveBtn").text("Save").removeClass("btn-warning").addClass("btn-primary");
+                },
+                error: function () {
+                    alert("Something went wrong!");
+                }
+            });
+        });
+
+        // Edit
+        $(document).on("click", ".editBtn", function () {
+            debugger;
+            var row = $(this).closest("tr");
+            $("#productId").val($(this).data("id"));
+            $("#productName").val(row.find("td:eq(0)").text());
+            $("#productDescription").val(row.find("td:eq(1)").text());
+            $("#productPrice").val(row.find("td:eq(2)").text());
+            // $("#productDiscount").val(row.find("td:eq(3)").text());
+
+            $("#saveBtn").text("Update").removeClass("btn-primary").addClass("btn-warning");
+        });
+
+        // Delete
+        $(document).on("click", ".deleteBtn", function () {
+            if (!confirm("Are you sure?")) return;
+
+            $.ajax({
+                url: '@Url.Action("Delete", "Products")',
+                type: "POST",
+                data: { id: $(this).data("id") },
+                success: function (html) {
+                    $("#productsBody").html($(html).find("#productsBody").html());
+                }
+            });
+        });
+
+    </script>
+}

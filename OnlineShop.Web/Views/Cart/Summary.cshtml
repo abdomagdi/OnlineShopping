@@ -1,0 +1,28 @@
+﻿@model IEnumerable<CartItem>
+@{
+    decimal total = ViewBag.Total;
+}
+
+<h2>Purchase Summary</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Total Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Product.Name</td>
+                <td>@item.Quantity</td>
+                <td>@item.TotalPrice</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h3>Total: @total</h3>

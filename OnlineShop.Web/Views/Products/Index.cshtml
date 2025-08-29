@@ -1,0 +1,161 @@
+﻿@using OnlineShop.Domain.Models
+@model IEnumerable<Product>
+
+<div class="container mt-4">
+    <h2 class="mb-3">Products Management</h2>
+
+    <!--Toast Notification -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="liveToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">                  
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form id="productForm">
+                <input type="hidden" name="Id" id="productId" />
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="Name" id="productName" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Price</label>
+                        <input type="number" step="0.01" name="Price" id="productPrice" class="form-control" required />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea name="Description" id="productDescription" class="form-control" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Discount %</label>
+                    <input type="number" step="0.1" name="DiscountPercent" id="productDiscount" class="form-control" />
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="saveBtn">Save</button>
+                <button type="reset" class="btn btn-secondary" id="resetBtn">Reset</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Products Table -->
+    <div id="productsContainer">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th width="20%">Name</th>
+                    <th width="30%">Description</th>
+                    <th width="15%">Price</th>
+                    <th width="15%">Discount</th>
+                    <th width="20%">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="productsBody">
+                @foreach (var item in Model)
+                {
+                    <tr data-id="@item.Id">
+                        <td width="20%">@item.Name</td>
+                        <td width="30%">@item.Description</td>
+                        <td width ="15%">@item.Price</td>
+                        <td width="15%">@item.DiscountPercent</td>
+                        <td width="20%">
+                            <button class="btn btn-sm btn-warning editBtn" data-id="@item.Id">Edit</button>
+                            <button class="btn btn-sm btn-danger deleteBtn" data-id="@item.Id">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+   
+        function showToast(message, type = "success") {
+            $("#toastMessage").text(message);
+          
+            let toastEl = document.getElementById('liveToast');
+            toastEl.classList.remove("bg-success", "bg-danger", "bg-warning");
+            if (type === "success") toastEl.classList.add("bg-success");
+            else if (type === "error") toastEl.classList.add("bg-danger");
+            else if (type === "warning") toastEl.classList.add("bg-warning");
+
+            let toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+
+        // Submit Add/Edit
+        $("#productForm").submit(function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: '@Url.Action("Save", "Products")',
+                type: "POST",
+                data: $(this).serialize(),
+                success: function (html) {
+                    $("#productsBody").html($(html).find("#productsBody").html());
+
+                    // Reset form
+                    $("#productForm")[0].reset();
+                    $("#productId").val("");
+                    $("#saveBtn").text("Save").removeClass("btn-warning").addClass("btn-primary");
+
+                    showToast("Product saved successfully!", "success");
+                },
+                error: function () {
+                    showToast("Something went wrong", "error");
+                }
+            });
+        });
+
+        // Edit
+        $(document).on("click", ".editBtn", function () {
+            var row = $(this).closest("tr");
+            $("#productId").val($(this).data("id"));
+            $("#productName").val(row.find("td:eq(0)").text());
+            $("#productDescription").val(row.find("td:eq(1)").text());
+            $("#productPrice").val(row.find("td:eq(2)").text());
+            $("#productDiscount").val(row.find("td:eq(3)").text());
+
+            $("#saveBtn").text("Update").removeClass("btn-primary").addClass("btn-warning");
+        });
+
+        // Reset → يرجع الفورم لحالة الإضافة
+        $("#resetBtn").click(function () {
+            $("#productId").val("");
+            $("#saveBtn").text("Save").removeClass("btn-warning").addClass("btn-primary");
+        });
+
+        // Delete
+        $(document).on("click", ".deleteBtn", function () {
+            if (!confirm("Are you sure?")) return;
+
+            $.ajax({
+                url: '@Url.Action("Delete", "Products")',
+                type: "POST",
+                data: { id: $(this).data("id") },
+                success: function (html) {
+                    $("#productsBody").html($(html).find("#productsBody").html());
+                    showToast("Product deleted successfully!", "warning");
+                },
+                error: function () {
+                    showToast("Delete failed", "error");
+                }
+            });
+        });
+    </script>
+}

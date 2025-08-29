@@ -1,0 +1,58 @@
+﻿@model List<CartItem>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>اسم المنتج</th>
+            <th>الكمية</th>
+            <th>السعر بعد الخصم</th>
+            <th>الإجمالي</th>
+            <th>إجراء</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Count > 0)
+        {
+            foreach (var item in Model)
+            {
+                var discountAmount = item.Product.Price * (item.Product.DiscountPercent / 100m);
+                var priceAfterDiscount = item.Product.Price - discountAmount;
+
+                <tr>
+                    <td>@item.Product.Name</td>
+                    <td>@item.Quantity</td>
+                    <td>@priceAfterDiscount.ToString()</td>
+                    <td>@item.TotalPrice.ToString("C")</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm remove-from-cart" data-id="@item.Product.Id">
+                            حذف
+                        </button>
+                    </td>
+                </tr>
+            }
+            <tr class="table-info">
+                <td colspan="3"><strong>الإجمالي النهائي</strong></td>
+                <td colspan="2">
+                    @{
+                        var total = Model.Sum(x => x.TotalPrice);
+                        if (total > 5000)
+                        {
+                            var final = total * 0.9m; // خصم 10% زيادة لو فوق 5000
+                            <span>@final.ToString("C") (شامل الخصم)</span>
+                        }
+                        else
+                        {
+                            <span>@total.ToString("C")</span>
+                        }
+                    }
+                </td>
+            </tr>
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center">الكارت فارغ</td>
+            </tr>
+        }
+    </tbody>
+</table>
